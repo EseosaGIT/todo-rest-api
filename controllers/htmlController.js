@@ -1,4 +1,7 @@
-module.exports = function (app, todos) {
+var todos = [];
+var todoID = 1;
+
+module.exports = function (app, middleware) {
         app.get('/', function(req, res){
         res.send('Yo it is my TOdo app here');
     });
@@ -31,4 +34,16 @@ module.exports = function (app, todos) {
         }
         // res.send('TODO with id '+req.params.id);
     });
+
+
+    // POST for allowing users send data (todo item) to us
+    // POST /todos  
+    app.post('/todos', middleware.jsonParser, function (req, res) {
+        var jsonBody = req.body;
+        jsonBody.id = todoID++; // incrementing the todoID and storing it in the current POSTed todo
+
+        todos.push(jsonBody);
+        res.send(todos);
+    });
+
 }
