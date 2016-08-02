@@ -7,7 +7,8 @@ module.exports = function (app) {
         res.send('Yo it is my TOdo app here');
     });
 
-    // GET /todos  all todos also filters via query parameters /todos?completed=true
+    // GET /todos  all todos also filters via query parameters /todos?completed=true 
+    // also filters via advanced query parameters /todos?completed=true&q=work
     app.get('/todos', function (req, res) {
         // need to convert todo collection to JSON.
         var queryParams = req.query; // queryParams is gonna be a string
@@ -19,8 +20,15 @@ module.exports = function (app) {
             } else if (queryParams.completed === 'false') { // if that completed is false, we wanna retrieve false todos
                 filterTodos = _.where(filterTodos, {completed: false});
             }            
-        }else {  // we didn't pass in completed key in the query parameter
-            // return res.status(400).send('must request for completed todos');
+        }
+        if (queryParams.hasOwnProperty('q')){ // queryParams has q as part of its properties. for extra query of searching the description
+            if (queryParams.q.length > 0) {
+                filterTodos = _.filter(filterTodos, function(eachTodo){
+                return eachTodo.description.toLowerCase().indexOf(queryParams.q.toLowerCase()) > -1; // if the indexOf of queryParams.q > than -1, then it was found
+                    // we return true and its added to the new filterTodos collection
+                });
+            }
+            
         }
 
         console.log('todos now ');
