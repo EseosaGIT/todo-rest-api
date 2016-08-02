@@ -6,7 +6,7 @@ var port = process.env.PORT || 3000;
 
 app.use(middleware.jsonParser);
 
-htmlController(app, middleware);
+htmlController(app);
 
 app.listen(port, function(){
     console.log('server started on port '+port);

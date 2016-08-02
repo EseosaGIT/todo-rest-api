@@ -2,15 +2,30 @@ var _ = require('underscore');
 var todos = [];
 var todoID = 1;
 
-module.exports = function (app, middleware) {
+module.exports = function (app) {
         app.get('/', function(req, res){
         res.send('Yo it is my TOdo app here');
     });
 
-    // GET /todos  all todos
+    // GET /todos  all todos also filters via query parameters /todos?completed=true
     app.get('/todos', function (req, res) {
         // need to convert todo collection to JSON.
-        res.json(todos); // built in express
+        var queryParams = req.query; // queryParams is gonna be a string
+        var filterTodos = todos
+
+        if (queryParams.hasOwnProperty('completed')){ // queryParams has completed as part of its properties
+            if (queryParams.completed === 'true') { // if that completed is true, we wanna retrieve true todos
+                filterTodos = _.where(filterTodos, {completed: true});
+            } else if (queryParams.completed === 'false') { // if that completed is false, we wanna retrieve false todos
+                filterTodos = _.where(filterTodos, {completed: false});
+            }            
+        }else {  // we didn't pass in completed key in the query parameter
+            // return res.status(400).send('must request for completed todos');
+        }
+
+        console.log('todos now ');
+        console.log(todos);
+        res.json(filterTodos); // built in express
     });
 
     // GET /todos/:id  specific todo
