@@ -49,4 +49,24 @@ module.exports = function (app, middleware) {
         res.send(todos);
     });
 
+
+
+     // DELETE /todos:id deletes a particular todo item
+    app.delete('/todos/:id', function (req, res) {
+        var todoID = parseInt(req.params.id, 10); // grabs the passed in id for deletion
+        var todoMatch = null; // todo to be deleted
+
+        todoMatch = _.findWhere(todos, {id: todoID}); // gets the particular account
+
+        if (!todoMatch)
+            return res.status(404).send('todo to be deleted not found');
+
+        todos = _.without(todos, todoMatch); // removes the todoMatch from the todos array
+        console.log('delete');
+        console.log(todoMatch);
+        console.log(todos);
+
+        res.json(todoMatch);
+    });
+
 }
