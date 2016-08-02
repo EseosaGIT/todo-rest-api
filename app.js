@@ -4,7 +4,7 @@ var htmlController = require('./controllers/htmlController');
 var middleware = require('./middleware'); // all our middleware here
 var port = process.env.PORT || 3000;
 
-// app.use(middleware.jsonParser);
+app.use(middleware.jsonParser);
 
 htmlController(app, middleware);
 

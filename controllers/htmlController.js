@@ -34,7 +34,7 @@ module.exports = function (app, middleware) {
 
     // POST for allowing users send data (todo item) to us
     // POST /todos  
-    app.post('/todos', middleware.jsonParser, function (req, res) {
+    app.post('/todos', function (req, res) {
         var jsonBody = req.body;
 
         jsonBody = _.pick(jsonBody, 'description', 'completed');
@@ -67,6 +67,42 @@ module.exports = function (app, middleware) {
         console.log(todos);
 
         res.json(todoMatch);
+    });
+
+
+    // PUT /todos:id updates a particular todo item
+    app.put('/todos/:id', function (req, res) {
+        var todoID = parseInt(req.params.id, 10);
+        var body = _.pick(req.body, 'description', 'completed'); // getting only objects with these properties
+        var todoMatch = _.findWhere(todos, {id: todoID});
+        var validAttributes = {};
+
+        console.log('body now is ');
+        console.log(body);
+
+        if (!todoMatch)
+            return res.status(404).send('todo to be updated not found');    
+
+        // for the completed part
+        if (body.hasOwnProperty('completed') && _.isBoolean(body.completed)) { // if true it means it exists and its also a boolean - what we want
+            validAttributes.completed = body.completed;
+            console.log('set new completed to '+validAttributes.completed);
+        } else if (body.hasOwnProperty('completed')){ // exist but not a boolean
+            return res.status(400).send('cannot complete request because completed is not a boolean');
+        }
+
+        // for the description part
+        if (body.hasOwnProperty('description') && _.isString(body.description) && body.description.trim().length > 0) { // if true it means it exists and its also a string and its length is > 0 - what we want
+            validAttributes.description = body.description;
+        } else if (body.hasOwnProperty('description')){ // exist but not a string or length <= 0
+            return res.status(400).send('cannot complete request because description is not a string or length is <= 0');
+        }
+
+        _.extend(todoMatch, validAttributes); // this copies the content of the validAttributes object into the todoMatch (if they exist is simply just updates them)
+        // we dont have to explicitly update the todos again because the todoMatch is passed by. specific todoMatch from the todos is automatically updated 
+
+        res.json(todoMatch);
+
     });
 
 }
