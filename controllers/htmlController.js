@@ -11,29 +11,36 @@ module.exports = function (app, db) {
     // also filters via advanced query parameters /todos?completed=true&q=work
     app.get('/todos', function (req, res) {
         // need to convert todo collection to JSON.
-        var queryParams = req.query; // queryParams is gonna be a string
-        var filterTodos = todos;
+        var query = req.query; // query is gonna be a string
+        var where = {}
 
-        if (queryParams.hasOwnProperty('completed')){ // queryParams has completed as part of its properties
-            if (queryParams.completed === 'true') { // if that completed is true, we wanna retrieve true todos
-                filterTodos = _.where(filterTodos, {completed: true});
-            } else if (queryParams.completed === 'false') { // if that completed is false, we wanna retrieve false todos
-                filterTodos = _.where(filterTodos, {completed: false});
+        if (query.hasOwnProperty('completed')){ // query has completed as part of its properties
+            if (query.completed === 'true') { // if that completed is true, we wanna retrieve true todos
+                where.completed = true;
+            } else if (query.completed === 'false') { // if that completed is false, we wanna retrieve false todos
+                where.completed = false;
             }            
         }
-        if (queryParams.hasOwnProperty('q')){ // queryParams has q as part of its properties. for extra query of searching the description
-            if (queryParams.q.length > 0) {
-                filterTodos = _.filter(filterTodos, function(eachTodo){
-                return eachTodo.description.toLowerCase().indexOf(queryParams.q.toLowerCase()) > -1; // if the indexOf of queryParams.q > than -1, then it was found
-                    // we return true and its added to the new filterTodos collection
-                });
-            }
-            
+        if (query.hasOwnProperty('q')){ // query has q as part of its properties. for extra query of searching the description
+            if (query.q.length > 0) {
+                where.description = {
+                    $like: '%'+query.q+'%'
+                };
+            }   
         }
-
-        console.log('todos now ');
-        console.log(todos);
-        res.json(filterTodos); // built in express
+        
+        db.todo_model.findAll({
+            where: where // where can be null, when there's no query, it simply returns all 
+        }).then(function(todos){
+            if(todos.length>0){
+                res.json(todos);
+            } else {
+                res.status(404).send('no todo with such query found');
+            }
+        }).catch(function(e){
+            res.status(500).send('Server error');
+        });
+       
     });
 
     // GET /todos/:id  specific todo
