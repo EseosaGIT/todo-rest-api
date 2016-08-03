@@ -12,7 +12,7 @@ module.exports = function (app, db) {
     app.get('/todos', function (req, res) {
         // need to convert todo collection to JSON.
         var queryParams = req.query; // queryParams is gonna be a string
-        var filterTodos = todos
+        var filterTodos = todos;
 
         if (queryParams.hasOwnProperty('completed')){ // queryParams has completed as part of its properties
             if (queryParams.completed === 'true') { // if that completed is true, we wanna retrieve true todos
@@ -41,17 +41,18 @@ module.exports = function (app, db) {
         var todoID = parseInt(req.params.id, 10);
         var todoMatch = null;
 
-        console.log('all todos'+todos);
-        console.log('todoID '+todoID);
-        
-        todoMatch = _.findWhere(todos, {id: todoID});
-
-        if (todoMatch === null || todoMatch === undefined){ // meaning it wasnt found
-            res.status(404).send('Todo not found');
-        } else { // it was found
-            res.json(todoMatch); // so send the json format of the found object
-        }
-        // res.send('TODO with id '+req.params.id);
+        db.todo_model.findById(todoID).then(function(todo){
+            if (todo){  // if a todo item was found
+                res.json(todo); // so send the json format of the found object
+            } else {
+                console.log('wasnt found');
+                res.status(404).send('Todo not found');
+            }
+            
+        }).catch(function(e){
+            console.log(e);
+            res.status(500).send('Server error');
+        });
     });
 
 
@@ -81,17 +82,6 @@ module.exports = function (app, db) {
         }).catch(function (e){
             console.log('error!!');
         })
-
-
-
-        // if(!_.isBoolean(jsonBody.completed) || !_.isString(jsonBody.description) || jsonBody.description.trim().length === 0)
-        //     return res.status(400).send('Wrong values POSTed');
-
-        // jsonBody.id = todoID++; // incrementing the todoID and storing it in the current POSTed todo
-        // jsonBody.description = jsonBody.description.trim();
-
-        // todos.push(jsonBody);
-        // res.send(todos);
     });
 
 
