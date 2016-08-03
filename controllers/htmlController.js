@@ -2,7 +2,7 @@ var _ = require('underscore');
 var todos = [];
 var todoID = 1;
 
-module.exports = function (app) {
+module.exports = function (app, db) {
         app.get('/', function(req, res){
         res.send('Yo it is my TOdo app here');
     });
@@ -65,11 +65,33 @@ module.exports = function (app) {
         if(!_.isBoolean(jsonBody.completed) || !_.isString(jsonBody.description) || jsonBody.description.trim().length === 0)
             return res.status(400).send('Wrong values POSTed');
 
-        jsonBody.id = todoID++; // incrementing the todoID and storing it in the current POSTed todo
         jsonBody.description = jsonBody.description.trim();
 
-        todos.push(jsonBody);
-        res.send(todos);
+        db.todo_model.create({
+            description: jsonBody.description,
+            completed: jsonBody.completed
+        }).then(function(todo){
+            if (todo){
+                console.log('successfully inserted');
+                res.json(todo);
+            }                
+            else{
+                console.log('not successful');
+            }
+        }).catch(function (e){
+            console.log('error!!');
+        })
+
+
+
+        // if(!_.isBoolean(jsonBody.completed) || !_.isString(jsonBody.description) || jsonBody.description.trim().length === 0)
+        //     return res.status(400).send('Wrong values POSTed');
+
+        // jsonBody.id = todoID++; // incrementing the todoID and storing it in the current POSTed todo
+        // jsonBody.description = jsonBody.description.trim();
+
+        // todos.push(jsonBody);
+        // res.send(todos);
     });
 
 
