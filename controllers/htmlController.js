@@ -98,17 +98,34 @@ module.exports = function (app, db) {
         var todoID = parseInt(req.params.id, 10); // grabs the passed in id for deletion
         var todoMatch = null; // todo to be deleted
 
-        todoMatch = _.findWhere(todos, {id: todoID}); // gets the particular account
+        db.todo_model.destroy({
+            where: {
+                id: todoID
+            }
+        }).then(function(todoDeleted){
+            if (todoDeleted){
+                console.log('deleted item is');
+                console.log(todo);
+                res.json(todo);
+            } else {
+                return res.status(404).send('todo to be deleted not found');
+            }
+            
+        }).catch(function(e){
+            res.status(500).send('server error');
+        })
 
-        if (!todoMatch)
-            return res.status(404).send('todo to be deleted not found');
+        // todoMatch = _.findWhere(todos, {id: todoID}); // gets the particular account
 
-        todos = _.without(todos, todoMatch); // removes the todoMatch from the todos array
-        console.log('delete');
-        console.log(todoMatch);
-        console.log(todos);
+        // if (!todoMatch)
+        //     return res.status(404).send('todo to be deleted not found');
 
-        res.json(todoMatch);
+        // todos = _.without(todos, todoMatch); // removes the todoMatch from the todos array
+        // console.log('delete');
+        // console.log(todoMatch);
+        // console.log(todos);
+
+        // res.json(todoMatch);
     });
 
 
